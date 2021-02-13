@@ -10,12 +10,17 @@ import (
 )
 
 type jwt struct {
-	Header  map[string]interface{}
-	Payload map[string]interface{}
+	header  map[string]interface{}
+	payload map[string]interface{}
 }
 
-func New(header, payload map[string]interface{}) *jwt {
-	return &jwt{Header: header, Payload: payload}
+func New() *jwt {
+	header := make(map[string]interface{})
+	header["alg"] = "HS256"
+	header["typ"] = "JWT"
+
+	payload := make(map[string]interface{})
+	return &jwt{header: header, payload: payload}
 }
 
 func (j *jwt) Sign(secret string) (string, error) {
@@ -60,14 +65,23 @@ func (j *jwt) Verify(token, secret string) error {
 	return nil
 }
 
+func (j *jwt) SetPayload(key string, data interface{}) {
+	j.payload[key] = data
+}
+
+func (j *jwt) Payload(key string) (interface{}, bool) {
+	data, ok := j.payload[key]
+	return data, ok
+}
+
 func (j *jwt) toUnsigned() (string, error) {
-	headerBytes, err := mapToJSONBytes(&j.Header)
+	headerBytes, err := mapToJSONBytes(&j.header)
 	if err != nil {
 		return "", err
 	}
 	headerBase64 := base64Encode(headerBytes)
 
-	payloadBytes, err := mapToJSONBytes(&j.Payload)
+	payloadBytes, err := mapToJSONBytes(&j.payload)
 	if err != nil {
 		return "", err
 	}
@@ -106,15 +120,12 @@ func mapFromJSONBytes(j []byte) (map[string]interface{}, error) {
 }
 
 func decodeJWT(header, payload string) (*jwt, error) {
-	headerMap, err := decodeString(header)
-	if err != nil {
-		return nil, err
-	}
 	payloadMap, err := decodeString(payload)
 	if err != nil {
 		return nil, err
 	}
-	jwt := New(headerMap, payloadMap)
+	jwt := New()
+	jwt.payload = payloadMap
 	return jwt, nil
 }
 

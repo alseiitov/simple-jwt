@@ -9,16 +9,11 @@ import (
 func TestCorrectlyGenerated(t *testing.T) {
 	secret := "53cr3tk3y"
 
-	header := make(map[string]interface{})
-	header["alg"] = "HS256"
-	header["typ"] = "JWT"
-
-	payload := make(map[string]interface{})
-	payload["user"] = "alseiitov"
-
 	expected := "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoiYWxzZWlpdG92In0.zkpqkk44FlOLmdC0Lvz-6PZVLX4pvx43_bCIyHrNM3M"
 
-	jwt := sjwt.New(header, payload)
+	jwt := sjwt.New()
+	jwt.SetPayload("user", "alseiitov")
+
 	token, err := jwt.Sign(secret)
 	if err != nil {
 		t.Error(err)
@@ -34,14 +29,9 @@ func TestCorrectlyGenerated(t *testing.T) {
 func TestPassedVerification(t *testing.T) {
 	secret := "53cr3tk3y"
 
-	header := make(map[string]interface{})
-	header["alg"] = "HS256"
-	header["typ"] = "JWT"
+	jwt := sjwt.New()
+	jwt.SetPayload("user", "alseiitov")
 
-	payload := make(map[string]interface{})
-	payload["user"] = "alseiitov"
-
-	jwt := sjwt.New(header, payload)
 	token, err := jwt.Sign(secret)
 	if err != nil {
 		t.Error(err)

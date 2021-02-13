@@ -4,7 +4,7 @@ A very simple JWT implementation written in Go.
  
 ### Install
 ```sh
-$ go get github.com/alseiitov/simple-jwt
+$ go get -u github.com/alseiitov/simple-jwt
 ```
 
 
@@ -22,23 +22,22 @@ var secret = "53cr3tk3y"
 
 func main() {
 	// Create new token
-	header := make(map[string]interface{})
-	header["alg"] = "HS256"
-	header["typ"] = "JWT"
-
-	payload := make(map[string]interface{})
-	payload["user"] = "alseiitov"
-
-	jwt := sjwt.New(header, payload)
+	jwt := sjwt.New()
+	jwt.SetPayload("name", "alseiitov")
 	token, _ := jwt.Sign(secret)
 
 	// Verify token
 	jwt2, _ := sjwt.Parse(token)
-	if err := jwt2.Verify(token, secret); err != nil {
-		fmt.Println(err)
-	} else {
-		fmt.Println("OK!")
-		fmt.Println(jwt.Payload["user"])
+	err := jwt2.Verify(token, secret)
+	if err != nil {
+		fmt.Println(err.Error())
+		return
+	}
+
+	// Identify user
+	name, ok := jwt2.Payload("name")
+	if ok {
+		fmt.Println(name)
 	}
 }
 
